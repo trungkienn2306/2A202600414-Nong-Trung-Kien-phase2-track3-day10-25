@@ -30,6 +30,7 @@ class CacheConfig(BaseModel):
 
 class LoadTestConfig(BaseModel):
     requests: int = Field(gt=0)
+    concurrency: int = Field(default=1, gt=0)
 
 
 class ScenarioConfig(BaseModel):
@@ -47,5 +48,5 @@ class LabConfig(BaseModel):
 
 
 def load_config(path: str | Path) -> LabConfig:
-    raw: dict[str, Any] = yaml.safe_load(Path(path).read_text())
+    raw: dict[str, Any] = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
     return LabConfig.model_validate(raw)

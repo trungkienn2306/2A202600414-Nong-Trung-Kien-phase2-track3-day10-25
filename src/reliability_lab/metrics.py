@@ -21,6 +21,9 @@ class RunMetrics(BaseModel):
     estimated_cost_saved: float = 0.0
     latencies_ms: list[float] = Field(default_factory=list)
     scenarios: dict[str, str] = Field(default_factory=dict)
+    scenario_details: dict[str, dict[str, object]] = Field(default_factory=dict)
+    cache_comparison: dict[str, dict[str, float]] = Field(default_factory=dict)
+    redis_evidence: dict[str, object] = Field(default_factory=dict)
 
     @property
     def availability(self) -> float:
@@ -57,11 +60,16 @@ class RunMetrics(BaseModel):
             "estimated_cost": round(self.estimated_cost, 6),
             "estimated_cost_saved": round(self.estimated_cost_saved, 6),
             "scenarios": self.scenarios,
+            "scenario_details": self.scenario_details,
+            "cache_comparison": self.cache_comparison,
+            "redis_evidence": self.redis_evidence,
         }
 
     def write_json(self, path: str | Path) -> None:
         Path(path).parent.mkdir(parents=True, exist_ok=True)
-        Path(path).write_text(json.dumps(self.to_report_dict(), indent=2, ensure_ascii=False))
+        Path(path).write_text(
+            json.dumps(self.to_report_dict(), indent=2, ensure_ascii=False), encoding="utf-8"
+        )
 
 
 def percentile(values: Iterable[float], q: float) -> float:

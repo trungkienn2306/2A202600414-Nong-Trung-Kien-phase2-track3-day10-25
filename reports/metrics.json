@@ -1,0 +1,193 @@
+{
+  "total_requests": 1000,
+  "availability": 0.8,
+  "error_rate": 0.2,
+  "latency_p50_ms": 0.95,
+  "latency_p95_ms": 110.67,
+  "latency_p99_ms": 190.96,
+  "fallback_success_rate": 0.308,
+  "cache_hit_rate": 0.591,
+  "circuit_open_count": 4,
+  "recovery_time_ms": 1047.2733974456787,
+  "estimated_cost": 0.100334,
+  "estimated_cost_saved": 0.2955,
+  "scenarios": {
+    "primary_timeout_100": "pass",
+    "primary_flaky_50": "pass",
+    "all_healthy": "pass",
+    "cache_stale_candidate": "pass",
+    "all_providers_down": "pass"
+  },
+  "scenario_details": {
+    "primary_timeout_100": {
+      "description": "Primary provider fails 100% — all traffic should fallback",
+      "expected": "Primary mở circuit và backup xử lý phần lớn traffic.",
+      "observed": {
+        "availability": 1.0,
+        "fallback_success_rate": 1.0,
+        "cache_hit_rate": 0.745,
+        "circuit_open_count": 1,
+        "static_fallbacks": 0,
+        "recovery_time_ms": null,
+        "transition_log": {
+          "primary": [
+            {
+              "from": "closed",
+              "to": "open",
+              "reason": "failure_threshold",
+              "ts": 1778670344.1199017
+            }
+          ],
+          "backup": []
+        }
+      },
+      "status": "pass"
+    },
+    "primary_flaky_50": {
+      "description": "Primary provider fails 50% — circuit should oscillate",
+      "expected": "Có cả primary và fallback, circuit có thể dao động theo lỗi.",
+      "observed": {
+        "availability": 1.0,
+        "fallback_success_rate": 1.0,
+        "cache_hit_rate": 0.74,
+        "circuit_open_count": 1,
+        "static_fallbacks": 0,
+        "recovery_time_ms": 1047.2733974456787,
+        "transition_log": {
+          "primary": [
+            {
+              "from": "closed",
+              "to": "open",
+              "reason": "failure_threshold",
+              "ts": 1778670344.975881
+            },
+            {
+              "from": "open",
+              "to": "half_open",
+              "reason": "reset_timeout_elapsed",
+              "ts": 1778670345.9250736
+            },
+            {
+              "from": "half_open",
+              "to": "closed",
+              "reason": "probe_success",
+              "ts": 1778670346.0231545
+            }
+          ],
+          "backup": []
+        }
+      },
+      "status": "pass"
+    },
+    "all_healthy": {
+      "description": "Baseline — both providers healthy",
+      "expected": "Không có lỗi, request đi qua primary hoặc cache.",
+      "observed": {
+        "availability": 1.0,
+        "fallback_success_rate": 0.0,
+        "cache_hit_rate": 0.735,
+        "circuit_open_count": 0,
+        "static_fallbacks": 0,
+        "recovery_time_ms": null,
+        "transition_log": {
+          "primary": [],
+          "backup": []
+        }
+      },
+      "status": "pass"
+    },
+    "cache_stale_candidate": {
+      "description": "Cache guardrail blocks false hits across different years",
+      "expected": "Cache chặn false-hit khi prompt khác năm hoặc ID.",
+      "observed": {
+        "availability": 1.0,
+        "fallback_success_rate": 0.0,
+        "cache_hit_rate": 0.735,
+        "circuit_open_count": 0,
+        "static_fallbacks": 0,
+        "recovery_time_ms": null,
+        "transition_log": {
+          "primary": [],
+          "backup": []
+        }
+      },
+      "false_hit_guardrail_passed": true,
+      "false_hit_log": [
+        {
+          "query_hash": "df38a4416a31",
+          "cached_key_hash": "f27b1797f4cf",
+          "score": 0.6867
+        }
+      ],
+      "status": "pass"
+    },
+    "all_providers_down": {
+      "description": "All providers fail — static fallback should be used",
+      "expected": "Tất cả provider lỗi và static fallback được kích hoạt.",
+      "observed": {
+        "availability": 0.0,
+        "fallback_success_rate": 0.0,
+        "cache_hit_rate": 0.0,
+        "circuit_open_count": 2,
+        "static_fallbacks": 200,
+        "recovery_time_ms": null,
+        "transition_log": {
+          "primary": [
+            {
+              "from": "closed",
+              "to": "open",
+              "reason": "failure_threshold",
+              "ts": 1778670347.0223103
+            }
+          ],
+          "backup": [
+            {
+              "from": "closed",
+              "to": "open",
+              "reason": "failure_threshold",
+              "ts": 1778670347.1268544
+            }
+          ]
+        }
+      },
+      "status": "pass"
+    }
+  },
+  "cache_comparison": {
+    "without_cache": {
+      "latency_p50_ms": 68.85,
+      "latency_p95_ms": 97.82,
+      "estimated_cost": 0.11426,
+      "cache_hit_rate": 0.0
+    },
+    "with_cache": {
+      "latency_p50_ms": 0.08,
+      "latency_p95_ms": 87.6,
+      "estimated_cost": 0.02983,
+      "cache_hit_rate": 0.745
+    },
+    "delta": {
+      "latency_p50_ms": -68.77,
+      "latency_p95_ms": -10.22,
+      "estimated_cost": -0.08443,
+      "cache_hit_rate": 0.745
+    }
+  },
+  "redis_evidence": {
+    "connected": true,
+    "shared_state": true,
+    "key_count": 19,
+    "keys": [
+      "rl:cache:<redacted:1>",
+      "rl:cache:<redacted:2>",
+      "rl:cache:<redacted:3>",
+      "rl:cache:<redacted:4>",
+      "rl:cache:<redacted:5>",
+      "rl:cache:<redacted:6>",
+      "rl:cache:<redacted:7>",
+      "rl:cache:<redacted:8>",
+      "rl:cache:<redacted:9>",
+      "rl:cache:<redacted:10>"
+    ]
+  }
+}
